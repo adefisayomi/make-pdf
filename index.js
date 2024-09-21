@@ -2,8 +2,8 @@ const express = require("express");
 const { scrapeLogic } = require("./scrapeLogic");
 const app = express();
 const cors = require("cors"); // Import cors
-const { downloadPdf } = require("./puppetter");
 const cookieParser = require("cookie-parser");
+const { downloadPdf } = require("./downloadPdf");
 
 const PORT = process.env.PORT || 4000;
 
