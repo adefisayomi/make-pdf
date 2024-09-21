@@ -4,8 +4,8 @@ const app = express();
 
 const PORT = process.env.PORT || 4000;
 
-app.get("/scrape", (req, res) => {
-  scrapeLogic(res);
+app.get("/scrape", async (req, res) => {
+  res.send( await scrapeLogic() )
 });
 
 app.get("/", (req, res) => {
