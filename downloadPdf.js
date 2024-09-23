@@ -23,7 +23,6 @@ const downloadPdf = async ({ url, selectedFont, size, isDarkMode }) => {
   let browser;
   try {
     console.log("Launching browser...");
-    // C:\Users\Adefisayomi\.cache\puppeteer\chrome\win64-129.0.6668.58\chrome-win64\chrome.exe
     const browser = await puppeteer.launch({
         args: [
           "--disable-setuid-sandbox",
