@@ -1,21 +1,6 @@
 require("dotenv").config();
 const puppeteer = require("puppeteer");
 
-// Convert millimeters to pixels
-const mmToPx = (mm) => mm * 3.7795275591; // 1 mm = 3.7795275591 px
-
-// Size mapping
-const pageSizeMap = {
-  A1: { width: 594, height: 841 },
-  A2: { width: 420, height: 594 },
-  A3: { width: 297, height: 420 },
-  A4: { width: 210, height: 297 },
-  A5: { width: 148, height: 210 },
-  A6: { width: 105, height: 148 },
-  Letter: { width: 216, height: 279 },
-  Legal: { width: 216, height: 356 },
-};
-
 // Function to add sleep
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -23,31 +8,32 @@ const downloadPdf = async ({ url, selectedFont, size, isDarkMode }) => {
   let browser;
   try {
     console.log("Launching browser...");
-    const browser = await puppeteer.launch({
-        args: [
-          "--disable-setuid-sandbox",
-          "--no-sandbox",
-          "--single-process",
-          "--no-zygote",
-        ],
-        executablePath:
-          process.env.NODE_ENV === "production"
-            ? process.env.PUPPETEER_EXECUTABLE_PATH
-            : puppeteer.executablePath(),
-      });
-
+    browser = await puppeteer.launch({
+      args: [
+        "--disable-setuid-sandbox",
+        "--no-sandbox",
+        "--single-process",
+        "--no-zygote",
+      ],
+      executablePath:
+        process.env.NODE_ENV === "production"
+          ? process.env.PUPPETEER_EXECUTABLE_PATH
+          : puppeteer.executablePath(),
+    });
 
     const page = await browser.newPage();
     console.log("Navigating to URL...");
     
     await page.goto(url, { waitUntil: "networkidle0", timeout: 60000 });
 
+    // Apply dark mode if necessary
     if (isDarkMode) {
       await page.evaluate(() => document.body.classList.add("dark"));
     } else {
       await page.evaluate(() => document.body.classList.remove("dark"));
     }
 
+    // Apply selected font if provided
     if (selectedFont) {
       await page.evaluate(async (font) => {
         const fontLink = document.createElement("link");
@@ -64,39 +50,53 @@ const downloadPdf = async ({ url, selectedFont, size, isDarkMode }) => {
       }, selectedFont);
     }
 
-    console.log("Waiting for font rendering...");
-    await sleep(2000);
+    // Ensure layout is complete and content is fully loaded
+    await sleep(3000); // Allow extra time for layout
+    await page.waitForSelector("#resume_container", { visible: true });
 
-    console.log("Getting bounding box...");
-    const boundingBox = await page.evaluate(() => {
-      const element = document.querySelector("#resume_container");
-      if (!element) return null;
-      const { offsetWidth, offsetHeight } = element;
-      return { width: offsetWidth, height: offsetHeight };
+    // Force a layout recalculation by scrolling the page
+    await page.evaluate(() => {
+      window.scrollBy(0, window.innerHeight);
     });
 
-    if (!boundingBox) {
-      throw new Error("Element with id #resume_container not found");
-    }
-
-    const sizeDimensions = size ? pageSizeMap[size] : null;
-    const width = sizeDimensions ? mmToPx(sizeDimensions.width) : boundingBox.width;
-    const height = sizeDimensions ? mmToPx(sizeDimensions.height) : boundingBox.height;
+    // Add custom CSS for proper layout and no overlap
+    await page.evaluate(() => {
+      const style = document.createElement('style');
+      style.innerHTML = `
+        #resume_container {
+          width: 100%;
+          position: relative;
+        }
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        @media print {
+          body {
+            font-size: 12px; /* Adjust font size */
+            line-height: 1.6; /* Adjust line height */
+            margin: 10px;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    });
 
     console.log("Generating PDF...");
     const pdfBuffer = await page.pdf({
-      printBackground: isDarkMode, // Prints background (dark mode) if set
-      format: size || 'A4', // Must be a valid PaperFormat type, default to A4
-      margin: { top: '0px', right: '0px', bottom: '0px', left: '0px' },
-      preferCSSPageSize: true, // Respect any CSS-defined page sizes
+      printBackground: true, // Print background color/images
+      format: size || "A4", // Default to A4 paper size
+      margin: { top: "0px", right: "0px", bottom: "0px", left: "0px" },
+      preferCSSPageSize: true, // Ensure page size respects CSS settings
     });
-    const buffer = Buffer.from(pdfBuffer)
+
+    const buffer = Buffer.from(pdfBuffer);
 
     console.log("PDF generated successfully.");
     return { success: true, message: null, data: buffer };
   } catch (err) {
     console.error("Error generating PDF:", err);
-    return { success: false, message: err.message }
+    return { success: false, message: err.message };
   } finally {
     if (browser) {
       console.log("Closing browser...");
@@ -104,6 +104,5 @@ const downloadPdf = async ({ url, selectedFont, size, isDarkMode }) => {
     }
   }
 };
-
 
 module.exports = { downloadPdf };
