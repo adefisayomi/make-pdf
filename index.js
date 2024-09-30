@@ -10,8 +10,8 @@ const PORT = process.env.PORT || 4000;
 
 // Enable CORS for requests from specific origins
 app.use(cors({
-  origin: ["http://localhost:3000", "https://qweek.vercel.app", "https://make-pdf.onrender.com"], // Allow specific origins
-  methods: ["GET", "POST"], // Allow specific methods
+  origin: ["http://localhost:3000", "https://qweek.vercel.app", "https://make-pdf.onrender.com", 'https://www.qweek-resume.com.ng'], // Allow specific origins
+  methods: ["GET", "POST", "PUT"], // Allow specific methods
   credentials: true, // Allow credentials (cookies)
   allowedHeaders: ["Content-Type", "Authorization"], // Ensure headers are allowed
 }));
@@ -41,7 +41,7 @@ app.use(async (req, res, next) => {
     return res.status(401).json({ success: false, message: error.message, data: null });
   }
 });
-
+``
 // Route for generating PDFs
 app.post('/resume', async (req, res) => {
   try {
