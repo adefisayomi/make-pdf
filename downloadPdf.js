@@ -4,16 +4,18 @@ const puppeteer = require("puppeteer");
 // Function to add sleep
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const downloadPdf = async ({ url, selectedFont, size, isDarkMode }) => {
+const downloadPdf = async ({ url, selectedFont, size, isDarkMode, textColor, bgColor }) => {
   let browser;
   try {
     console.log("Launching browser...");
     browser = await puppeteer.launch({
+      headless: process.env.NODE_ENV === 'production', // Headless only in production
       args: [
         "--disable-setuid-sandbox",
         "--no-sandbox",
         "--single-process",
         "--no-zygote",
+        "--start-fullscreen"
       ],
       executablePath:
         process.env.NODE_ENV === "production"
@@ -23,15 +25,26 @@ const downloadPdf = async ({ url, selectedFont, size, isDarkMode }) => {
 
     const page = await browser.newPage();
     console.log("Navigating to URL...");
-    
+
+    const { width: screenWidth, height: screenHeight } = await page.evaluate(() => ({
+      width: screen.width,
+      height: screen.height,
+    }));
+
+    await page.setViewport({
+      width: screenWidth,
+      height: screenHeight,
+      deviceScaleFactor: 1,
+    });
+
     await page.goto(url, { waitUntil: "networkidle0", timeout: 60000 });
 
     // Apply dark mode if necessary
-    if (isDarkMode) {
-      await page.evaluate(() => document.body.classList.add("dark"));
-    } else {
-      await page.evaluate(() => document.body.classList.remove("dark"));
-    }
+    // if (isDarkMode) {
+    //   await page.evaluate(() => document.body.classList.add("dark"));
+    // } else {
+    //   await page.evaluate(() => document.body.classList.remove("dark"));
+    // }
 
     // Apply selected font if provided
     if (selectedFont) {
@@ -60,34 +73,45 @@ const downloadPdf = async ({ url, selectedFont, size, isDarkMode }) => {
     });
 
     // Add custom CSS for proper layout and no overlap
-    await page.evaluate(() => {
+    await page.evaluate((textColor, bgColor) => {
       const style = document.createElement('style');
+      const container = document.querySelector("#resume_container");
+      const rect = container.getBoundingClientRect();
       style.innerHTML = `
         #resume_container {
           width: 100%;
           position: relative;
+          height: ${Math.ceil(rect.height)}px;
+          background: transparent;
+          color: ${textColor || 'inherit'};
+          border: inherit solid ${textColor || 'inherit'};
         }
         body {
           margin: 0;
           padding: 0;
+          height: ${Math.ceil(rect.height)}px;
+          background: ${bgColor || 'inherit'};
+          color: ${textColor || 'inherit'};
         }
-        @media print {
-          body {
-            font-size: 12px; /* Adjust font size */
-            line-height: 1.6; /* Adjust line height */
-            margin: 10px;
-          }
-        }
+        // @media print {
+        //   body {
+        //     font-size: 12px; /* Adjust font size */
+        //     line-height: 1.6; /* Adjust line height */
+        //     margin: 10px;
+        //     background-color: yellow;
+        //     height: ${Math.ceil(rect.height)}px;
+        //   }
+        // }
       `;
       document.head.appendChild(style);
-    });
+    }, textColor, bgColor);
 
     console.log("Generating PDF...");
     const pdfBuffer = await page.pdf({
       printBackground: true, // Print background color/images
       format: size || "A4", // Default to A4 paper size
       margin: { top: "0px", right: "0px", bottom: "0px", left: "0px" },
-      preferCSSPageSize: true, // Ensure page size respects CSS settings
+      // preferCSSPageSize: true, // Ensure page size respects CSS settings
     });
 
     const buffer = Buffer.from(pdfBuffer);

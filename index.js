@@ -45,8 +45,8 @@ app.use(async (req, res, next) => {
 // Route for generating PDFs
 app.post('/resume', async (req, res) => {
   try {
-    const { url, selectedFont, size, isDarkMode } = req.body;
-    const result = await downloadPdf({ url, selectedFont, size, isDarkMode });
+    const { url, selectedFont, textColor, bgColor } = req.body;
+    const result = await downloadPdf({ url, selectedFont, size, isDarkMode, textColor, bgColor });
     res.json(result);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message, data: null });
