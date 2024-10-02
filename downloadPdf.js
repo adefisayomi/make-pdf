@@ -93,15 +93,6 @@ const downloadPdf = async ({ url, selectedFont, size, isDarkMode, textColor, bgC
           background: ${bgColor || 'inherit'};
           color: ${textColor || 'inherit'};
         }
-        // @media print {
-        //   body {
-        //     font-size: 12px; /* Adjust font size */
-        //     line-height: 1.6; /* Adjust line height */
-        //     margin: 10px;
-        //     background-color: yellow;
-        //     height: ${Math.ceil(rect.height)}px;
-        //   }
-        // }
       `;
       document.head.appendChild(style);
     }, textColor, bgColor);
