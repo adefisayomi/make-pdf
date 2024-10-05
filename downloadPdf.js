@@ -9,7 +9,6 @@ const downloadPdf = async ({ url, selectedFont, size, isDarkMode, textColor, bgC
   try {
     console.log("Launching browser...");
     browser = await puppeteer.launch({
-      headless: process.env.NODE_ENV === 'production', // Headless only in production
       args: [
         "--disable-setuid-sandbox",
         "--no-sandbox",
