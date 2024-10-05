@@ -83,7 +83,7 @@ const downloadPdf = async ({ url, selectedFont, size, isDarkMode, textColor, bgC
           height: ${Math.ceil(rect.height)}px;
           background: transparent;
           color: ${textColor || 'inherit'};
-          border: inherit solid ${textColor || 'inherit'};
+          border-color: ${textColor || 'inherit'};
         }
         body {
           margin: 0;
