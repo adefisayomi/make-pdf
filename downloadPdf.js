@@ -84,6 +84,7 @@ const downloadPdf = async ({ url, selectedFont, size, isDarkMode, textColor, bgC
           background: transparent;
           color: ${textColor || 'inherit'};
           border-color: ${textColor || 'inherit'};
+          font-weight: inherit; /* Inherit font-weight */
         }
         body {
           margin: 0;
@@ -91,10 +92,12 @@ const downloadPdf = async ({ url, selectedFont, size, isDarkMode, textColor, bgC
           height: ${Math.ceil(rect.height)}px;
           background: ${bgColor || 'inherit'};
           color: ${textColor || 'inherit'};
+          font-weight: inherit; /* Inherit font-weight */
         }
       `;
       document.head.appendChild(style);
     }, textColor, bgColor);
+    
 
     console.log("Generating PDF...");
     const pdfBuffer = await page.pdf({
