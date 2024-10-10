@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const { downloadPdf } = require("./downloadPdf");
+const schedule = require('node-schedule');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -18,6 +19,16 @@ app.use(cors({
 
 app.use(cookieParser());
 app.use(express.json()); // Parse JSON bodies
+
+app.get('/', (req, res) => {
+  res.send('Scheduler is running...');
+});
+
+// Schedule a job to run every 5 seconds using node-schedule
+const job = schedule.scheduleJob('*/5 * * * * *', function() {
+  console.log('Job is running every 5 seconds...');
+  // Add your task logic here (e.g., calling an API, database cleanup, etc.)
+});
 
 // Token verification middleware
 app.use(async (req, res, next) => {
