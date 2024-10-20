@@ -5,7 +5,6 @@ const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const { downloadPdf } = require("./downloadPdf");
 const schedule = require('node-schedule');
-const { scrapeIndeed } = require("./scrapeIndeed");
 const { getJobLinks } = require("./getJobLinks");
 
 const app = express();
@@ -75,7 +74,6 @@ app.post('/resume', async (req, res) => {
 app.post("/jobs/links", async (req, res) => {
   const {jobTitle, countryCode, state, languageCode} = req.body
   const url = `https://${countryCode || 'ng'}.indeed.com/jobs?q=${jobTitle || 'all'}&fromage=1&lang=${languageCode || 'en'}`
-  console.log(url)
   const result = await getJobLinks({url})
   res.send(result)
 })

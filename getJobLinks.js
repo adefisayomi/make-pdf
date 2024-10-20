@@ -8,19 +8,18 @@ const getJobLinks = async ({ url }) => {
   try {
     console.log("Launching browser...");
     browser = await puppeteer.launch({
-      args: [
-        "--disable-setuid-sandbox",
-        "--no-sandbox",
-        "--single-process",
-        "--no-zygote",
-        "--start-fullscreen"
-      ],
-      executablePath:
-        process.env.NODE_ENV === "production"
-          ? process.env.PUPPETEER_EXECUTABLE_PATH
-          : puppeteer.executablePath(),
-      headless: process.env.NODE_ENV !== 'production' && false
-    });
+        args: [
+          "--disable-setuid-sandbox",
+          "--no-sandbox",
+          "--single-process",
+          "--no-zygote",
+          "--start-fullscreen"
+        ],
+        executablePath:
+          process.env.NODE_ENV === "production"
+            ? process.env.PUPPETEER_EXECUTABLE_PATH
+            : puppeteer.executablePath(),
+      });
 
     const page = await browser.newPage();
     console.log("Navigating to URL...");
@@ -61,7 +60,7 @@ const getJobLinks = async ({ url }) => {
     };
   } 
   catch (err) {
-    console.error("Error generating PDF:", err);
+    console.error({error: err.message});
     return { success: false, message: err.message };
   } 
   finally {
