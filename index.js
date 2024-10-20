@@ -21,15 +21,15 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json()); // Parse JSON bodies
 
-app.get('/', (req, res) => {
-  res.send('Scheduler is running...');
-});
+// app.get('/', (req, res) => {
+//   res.send('Scheduler is running...');
+// });
 
 // Schedule a job to run every 5 seconds using node-schedule
-const job = schedule.scheduleJob('*/14 * * * *', function() {
-  console.log('Job is running every 14 minutes...');
-  // Add your task logic here (e.g., calling an API, database cleanup, etc.)
-});
+// const job = schedule.scheduleJob('*/14 * * * *', function() {
+//   console.log('Job is running every 14 minutes...');
+//   // Add your task logic here (e.g., calling an API, database cleanup, etc.)
+// });
 
 // Token verification middleware
 // app.use(async (req, res, next) => {
