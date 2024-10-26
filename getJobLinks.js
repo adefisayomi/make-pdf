@@ -9,12 +9,14 @@ const getJobLinks = async ({ url }) => {
   try {
     console.log("Launching browser...");
     browser = await puppeteer.launch({
-      headless: process.env.NODE_ENV !== 'production' && false,
+      headless: false,
       args: [
         "--disable-setuid-sandbox",
         "--no-sandbox",
         "--single-process",
         "--no-zygote",
+        "--disable-gpu",
+        "--headless=new", // or "--headless=chrome" if this flag doesn't work
         "--start-fullscreen"
       ],
       executablePath:
@@ -27,20 +29,19 @@ const getJobLinks = async ({ url }) => {
     console.log("Navigating to URL...");
     await page.goto(url, { waitUntil: "networkidle0", timeout: 0 });
 
-// Get job links
-const baseUrl = new URL(url); // Create a new URL object from the job link
-const linkUrl = `${baseUrl.protocol}//${baseUrl.hostname}`;
+    // Get job links
+    const baseUrl = new URL(url); // Create a new URL object from the job link
+    const linkUrl = `${baseUrl.protocol}//${baseUrl.hostname}`;
 
-const jobLinks = await page.evaluate((linkUrl) => {
-  return Array.from(document.querySelectorAll('#mosaic-jobResults li'))
-    .map(job => {
-      const link = job.querySelector(".jobTitle > a")?.getAttribute('href') || '';
-      return link ? `${linkUrl}${link}` : null; // Return the complete link or null
-    })
-    .filter(Boolean) // Filter out any null entries
-    .slice(0, 18); // Limit the result to the first 18 links
-}, linkUrl); // Pass linkUrl into the evaluate function as an argument
-
+    const jobLinks = await page.evaluate((linkUrl) => {
+      return Array.from(document.querySelectorAll('#mosaic-jobResults li'))
+        .map(job => {
+          const link = job.querySelector(".jobTitle > a")?.getAttribute('href') || '';
+          return link ? `${linkUrl}${link}` : null; // Return the complete link or null
+        })
+        .filter(Boolean) // Filter out any null entries
+        .slice(0, 18); // Limit the result to the first 18 links
+    }, linkUrl); // Pass linkUrl into the evaluate function as an argument
 
     // Fetch text content from each job link
     const jobContents = [];
