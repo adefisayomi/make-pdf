@@ -73,7 +73,8 @@ app.post('/resume', async (req, res) => {
 
 app.post("/jobs/links", async (req, res) => {
   const {jobTitle, countryCode, state, languageCode} = req.body
-  const url = `https://${countryCode || 'ng'}.indeed.com/jobs?q=${jobTitle || 'all'}&fromage=1&lang=${languageCode || 'en'}`
+  const url = (`https://${countryCode || 'ng'}.indeed.com/jobs?q=${jobTitle || 'all'}&fromage=1&lang=${languageCode || 'en'}`).toLowerCase()
+  console.log(url)
   const result = await getJobLinks({url})
   res.send(result)
 })

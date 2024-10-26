@@ -89,6 +89,8 @@ const scrapeIndeed = async ({ url }) => {
         }
       }
     }
+
+    console.log(result)
     
     
   
@@ -99,7 +101,7 @@ const scrapeIndeed = async ({ url }) => {
     })
   } 
   catch (err) {
-    console.error("Error generating PDF:", err);
+    console.error("Error :", err);
     return { success: false, message: err.message };
   } 
   finally {
